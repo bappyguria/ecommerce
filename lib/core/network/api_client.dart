@@ -1,0 +1,153 @@
+import 'dart:convert';
+import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
+import '../../features/data/models/category_model.dart';
+import '../../features/data/models/product_model.dart';
+import '../storage/hive_service.dart';
+import '../utils/url.dart';
+
+class ApiService {
+  /// 🔐 SIGN UP
+  static Future<Map<String, dynamic>> signUp({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String phone,
+    required String city,
+    required String password,
+  }) async {
+    print(
+      'Signing up user: $email , Name: $firstName $lastName, Phone: $phone, City: $city, Password: $password,',
+    );
+    final response = await http.post(
+      Uri.parse(Url.signUp),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'first_name': firstName,
+        'last_name': lastName,
+        'email': email,
+        'phone': phone,
+        'city': city,
+        'password': password,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return data;
+    } else {
+      throw Exception(data['msg'] ?? 'Signup failed');
+    }
+  }
+
+  /// 🔐 Pin Verification (future)
+
+  static Future<Map<String, dynamic>> verifyPin({
+    required String email,
+    required String pinCode,
+  }) async {
+    print('Verifying pin for email: $email with pinCode: $pinCode');
+    final response = await http.post(
+      Uri.parse(Url.pinVerification),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'otp': pinCode}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return data;
+    } else {
+      print('Pin verification failed with response: $data');
+      throw Exception(data['msg'] ?? 'Pin verification failed');
+    }
+  }
+
+  /// Login
+  static Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse(Url.login),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+
+    final data = jsonDecode(response.body);
+    print('Login response data: $data');
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final token = data['data']['token'];
+      final user = data['data']['user'];
+
+      await HiveService.saveToken(token);
+      await HiveService.saveUser(user);
+
+      return data;
+    } else {
+      throw Exception(data['msg'] ?? 'Login failed');
+    }
+  }
+
+  //// Home Slider
+  static Future<List<String>> fetchHomeSliderImages() async {
+    final response = await http.get(Uri.parse(Url.homeSlider));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return List<String>.from(
+        data['data']['results'].map((item) => item['photo_url'] as String),
+      );
+    } else {
+      throw Exception('Error loading slider images');
+    }
+  }
+
+  /// 🔹 Get Categories
+  static Future<Map<String, dynamic>> getCategories({
+    required int limit,
+    required int page,
+  }) async {
+    final response = await http.get(Uri.parse(Url.categories(limit, page)));
+
+    final data = jsonDecode(response.body);
+
+    print("Product List By Category Id : ${response.body}");
+
+    final List<CategoryModel> items = (data['data']['results'] as List)
+        .map((e) => CategoryModel.fromJson(e))
+        .toList();
+
+    return {'items': items, 'total': data['data']['total']};
+  }
+
+  ////
+  ///🔹 Get Products List By Category Id
+  static Future<Map<String,dynamic>> getProductListByCategoryId({required String categoryId}) async {
+    final box = Hive.box('authBox');
+    final token = box.get('token');
+
+    final response = await http.get(Uri.parse(  Url.productsListByCategoryId(categoryId)),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    print("Product List By Category Id : ${response.body}");
+
+    if(response.statusCode == 200){
+      final List<dynamic> productsData = data['data']['results'];
+      print("Products Data: $productsData");
+      final List<Product> products = productsData.map((e) => Product.fromJson(e)).toList();
+      return  {'products': products};
+    }else{
+      throw Exception(data['msg'] ?? 'Failed to load products');
+    }
+  }
+
+
+}
