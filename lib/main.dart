@@ -1,4 +1,10 @@
 
+import 'package:ecommerceapp/features/screens/add_cart/add_cart_bloc.dart';
+import 'package:ecommerceapp/features/screens/cart_list/bloc/cart_list_bloc.dart';
+import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_detals_bloc.dart';
+import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_detals_event.dart';
+import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_detals_state.dart';
+import 'package:ecommerceapp/features/screens/home/product_ditals/prouct_ditals_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -43,6 +49,10 @@ class MyApp extends StatelessWidget {
           child: HomeScreen(),
         ),
         BlocProvider<ProductListBloc>(create: (context) => ProductListBloc()),
+        BlocProvider<AddCartBloc>(create: (context) => AddCartBloc()),
+        BlocProvider<ProductDetalsBloc>(create: (context) => ProductDetalsBloc()),
+              BlocProvider<CartListBloc>(create: (context) => CartListBloc()),
+
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

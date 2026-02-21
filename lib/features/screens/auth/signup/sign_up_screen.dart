@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -147,67 +146,73 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       SizedBox(width: 20),
                       Expanded(
-  child: SizedBox(
-    width: double.infinity,
-    height: 40,
-    child: BlocConsumer<SignUpBloc, SignUpState>(
-      listener: (context, state) {
-        if (state is SignUpSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-          context.go('/pin-verification',extra: emailTextController.text.trim());
-        } else if (state is SignUpError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-        }
-      },
-      builder: (context, state) {
-        // 🔄 LOADING STATE
-        if (state is SignUpLoading) {
-          return Center(
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: AppColors.primary,
-              ),
-            ),
-          );
-        }
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 40,
+                          child: BlocConsumer<SignUpBloc, SignUpState>(
+                            listener: (context, state) {
+                              if (state is SignUpSuccess) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(state.message)),
+                                );
+                                context.go(
+                                  '/pin-verification',
+                                  extra: emailTextController.text.trim(),
+                                );
+                              } else if (state is SignUpError) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(state.message)),
+                                );
+                              }
+                            },
+                            builder: (context, state) {
+                              // 🔄 LOADING STATE
+                              if (state is SignUpLoading) {
+                                return Center(
+                                  child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                );
+                              }
 
-        // 🔘 NORMAL BUTTON
-        return ElevatedButton(
-          onPressed: () {
-            if (formKey.currentState!.validate()) {
-              context.read<SignUpBloc>().add(
-                    SubmitSignUp(
-                      firstName: firstNameController.text.trim(),
-                      lastName: lastNameController.text.trim(),
-                      email: emailTextController.text.trim(),
-                      phone: mobileNumberController.text.trim(),
-                      city: cityController.text.trim(),
-                      password: passwordController.text,
-                    ),
-                  );
-            }
-          },
-          child: const Text(
-            'SignUp',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-        );
-      },
-    ),
-  ),
-),
- ],
+                              // 🔘 NORMAL BUTTON
+                              return ElevatedButton(
+                                onPressed: () {
+                                  if (formKey.currentState!.validate()) {
+                                    context.read<SignUpBloc>().add(
+                                      SubmitSignUp(
+                                        firstName: firstNameController.text
+                                            .trim(),
+                                        lastName: lastNameController.text
+                                            .trim(),
+                                        email: emailTextController.text.trim(),
+                                        phone: mobileNumberController.text
+                                            .trim(),
+                                        city: cityController.text.trim(),
+                                        password: passwordController.text,
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  'SignUp',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 20),
                 ],
@@ -226,5 +231,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
     cityController.clear();
 
     passwordController.clear();
+  }
+
+  @override
+  dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    mobileNumberController.dispose();
+    cityController.dispose();
+
+    passwordController.dispose();
+    emailTextController.dispose();
+    super.dispose();
   }
 }

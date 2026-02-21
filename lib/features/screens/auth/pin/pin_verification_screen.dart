@@ -30,8 +30,9 @@ class _PinVerificationScreenState
   }
   @override
   void dispose() {
-    _pinController.dispose();
+    // TODO: implement dispose
     super.dispose();
+    _pinController.dispose();
   }
 
 
@@ -193,4 +194,6 @@ onCompleted: (value) {
       ),
     );
   }
+
+  
 }

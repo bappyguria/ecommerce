@@ -57,7 +57,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   return InkWell(
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(
-                        builder: (context) => ProductDetailsScreen(product: product),
+                        builder: (context) => ProductDetailsScreen(productId: product.id ?? ""),
                       ));
                     },
                     child: Container(

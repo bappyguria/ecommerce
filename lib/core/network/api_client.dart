@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:ecommerceapp/features/data/models/cart_item_mode.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import '../../features/data/models/category_model.dart';
@@ -80,7 +81,7 @@ class ApiService {
     if (response.statusCode == 200 || response.statusCode == 201) {
       final token = data['data']['token'];
       final user = data['data']['user'];
-
+      print('Login successful, token: $token,');
       await HiveService.saveToken(token);
       await HiveService.saveUser(user);
 
@@ -124,30 +125,99 @@ class ApiService {
 
   ////
   ///🔹 Get Products List By Category Id
-  static Future<Map<String,dynamic>> getProductListByCategoryId({required String categoryId}) async {
-    final box = Hive.box('authBox');
-    final token = box.get('token');
-
-    final response = await http.get(Uri.parse(  Url.productsListByCategoryId(categoryId)),
-      headers: {
-        "Authorization": "Bearer $token",
-        "Accept": "application/json",
-      },
+  static Future<Map<String, dynamic>> getProductListByCategoryId({
+    required String categoryId,
+  }) async {
+    final response = await http.get(
+      Uri.parse(Url.productsListByCategoryId(categoryId)),
+      headers: {"Accept": "application/json"},
     );
 
     final data = jsonDecode(response.body);
 
     print("Product List By Category Id : ${response.body}");
 
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       final List<dynamic> productsData = data['data']['results'];
       print("Products Data: $productsData");
-      final List<Product> products = productsData.map((e) => Product.fromJson(e)).toList();
-      return  {'products': products};
-    }else{
+      final List<Product> products = productsData
+          .map((e) => Product.fromJson(e))
+          .toList();
+      return {'products': products};
+    } else {
       throw Exception(data['msg'] ?? 'Failed to load products');
     }
   }
 
+  static Future<String> addToCart({required String productId}) async {
+    final box = Hive.box('authBox');
+    final token = box.get('token') as String?;
+
+    final response = await http.post(
+      Uri.parse(Url.addToCartUrl),
+      headers: {
+        "token": "$token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: jsonEncode({"product": productId}),
+    );
+
+    print("STATUS: ${response.statusCode}");
+    print("BODY: ${response.body}");
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return data['msg'];
+    } else {
+      throw Exception(data['msg']);
+    }
+  }
+
+static Future<Product> getProductDetails({
+  required String productId,
+}) async {
+
+  final response = await http.get(
+    Uri.parse(Url.productsDetailsByProductId(productId)),
+    headers: {"Accept": "application/json"},
+  );
+
+  final data = jsonDecode(response.body);
+print("Product Details Response: ${response.body}");
+  if (response.statusCode == 200) {
+    return Product.fromJson(data['data']);
+  } else {
+    throw Exception(data['msg'] ?? 'Failed to load product details');
+  }
+}
+static Future<List<CartItemModel>> getCartList() async {
+  final box = Hive.box('authBox');
+  final token = box.get('token') as String?;
+
+  final response = await http.get(
+    Uri.parse(Url.cartListUrl),
+    headers: {
+      "token": "$token",
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+  );
+
+  print("Cart List STATUS: ${response.statusCode}");
+  print("Cart List BODY: ${response.body}");
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200) {
+    final List<dynamic> cartItemsData = data['data']['results'];
+    return cartItemsData
+        .map((e) => CartItemModel.fromJson(e))
+        .toList();
+  } else {
+    throw Exception(data['msg'] ?? 'Failed to load cart list');
+  }
+}
 
 }

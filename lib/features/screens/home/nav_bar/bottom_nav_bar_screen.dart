@@ -1,4 +1,5 @@
 
+import 'package:ecommerceapp/features/screens/cart_list/cart_list_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../categories/categories_list_screen.dart';
@@ -27,7 +28,7 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
       onSeeAllCategories: () => changeTab(1), // 👈 Categories tab open
     ),
     const CategoriesListScreen(),
-    const Scaffold(body: Center(child: Text('Cart'))),
+    const CartScreen(),
     const Scaffold(body: Center(child: Text('Wish List'))),
   ];
 

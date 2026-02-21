@@ -9,5 +9,8 @@ class Url {
       '$_baseUrl/categories?count=$count&page=$page';
   static String productsListByCategoryId(String categoryId) =>
       '$_baseUrl/products?category=$categoryId';
-
+        static String productsDetailsByProductId(String productId) =>
+      '$_baseUrl/products/id/$productId';
+static String addToCartUrl =  '$_baseUrl/cart';
+static String cartListUrl =  '$_baseUrl/cart';
 }
