@@ -9,7 +9,6 @@ import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_d
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 class ProductDetailsScreen extends StatefulWidget {
   final String productId;
 
@@ -46,8 +45,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           }
 
           if (state is ProductDetalsLoaded) {
-             final product = state.product;
-      final images = product.photos ?? [];
+            final product = state.product;
+            final images = product.photos ?? [];
 
             return Column(
               children: [
@@ -56,7 +55,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   height: 300,
                   width: double.infinity,
                   color: Colors.grey.shade200,
-                  child:images.isEmpty
+                  child: images.isEmpty
                       ? const Icon(Icons.image, size: 80)
                       : images.length == 1
                       ? Image.network(images.first, fit: BoxFit.contain)
@@ -368,9 +367,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               print("Size: $selectedSize");
                               print("Quantity: $quantity");
                               context.read<AddCartBloc>().add(
-                                AddToCartEvent(
-                                  productId: product.id ?? "",
-                                ),
+                                AddToCartEvent(productId: product.id ?? ""),
                               );
                             },
                             child: const Text(

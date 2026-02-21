@@ -175,49 +175,114 @@ class ApiService {
     }
   }
 
-static Future<Product> getProductDetails({
-  required String productId,
-}) async {
+  static Future<Product> getProductDetails({required String productId}) async {
+    final response = await http.get(
+      Uri.parse(Url.productsDetailsByProductId(productId)),
+      headers: {"Accept": "application/json"},
+    );
 
-  final response = await http.get(
-    Uri.parse(Url.productsDetailsByProductId(productId)),
-    headers: {"Accept": "application/json"},
-  );
-
-  final data = jsonDecode(response.body);
-print("Product Details Response: ${response.body}");
-  if (response.statusCode == 200) {
-    return Product.fromJson(data['data']);
-  } else {
-    throw Exception(data['msg'] ?? 'Failed to load product details');
+    final data = jsonDecode(response.body);
+    print("Product Details Response: ${response.body}");
+    if (response.statusCode == 200) {
+      return Product.fromJson(data['data']);
+    } else {
+      throw Exception(data['msg'] ?? 'Failed to load product details');
+    }
   }
-}
-static Future<List<CartItemModel>> getCartList() async {
-  final box = Hive.box('authBox');
-  final token = box.get('token') as String?;
 
-  final response = await http.get(
-    Uri.parse(Url.cartListUrl),
-    headers: {
-      "token": "$token",
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    },
-  );
+  //// Get Cart List
+  static Future<List<CartItemModel>> getCartList() async {
+    final box = Hive.box('authBox');
+    final token = box.get('token') as String?;
 
-  print("Cart List STATUS: ${response.statusCode}");
-  print("Cart List BODY: ${response.body}");
+    final response = await http.get(
+      Uri.parse(Url.cartListUrl),
+      headers: {
+        "token": "$token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+    );
 
-  final data = jsonDecode(response.body);
+    print("Cart List STATUS: ${response.statusCode}");
+    print("Cart List BODY: ${response.body}");
 
-  if (response.statusCode == 200) {
-    final List<dynamic> cartItemsData = data['data']['results'];
-    return cartItemsData
-        .map((e) => CartItemModel.fromJson(e))
-        .toList();
-  } else {
-    throw Exception(data['msg'] ?? 'Failed to load cart list');
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> cartItemsData = data['data']['results'];
+      return cartItemsData.map((e) => CartItemModel.fromJson(e)).toList();
+    } else {
+      throw Exception(data['msg'] ?? 'Failed to load cart list');
+    }
   }
-}
 
+  //// Remove Cart Item
+  static Future<String> removeCartItem(String cartItemId) async {
+    final box = Hive.box('authBox');
+    final token = box.get('token') as String?;
+
+    final response = await http.delete(
+      Uri.parse(Url.cartItemRemoveUrl(cartItemId)),
+      headers: {
+        "token": "$token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+    );
+
+    print("Remove Cart Item STATUS: ${response.statusCode}");
+    print("Remove Cart Item BODY: ${response.body}");
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data['msg'];
+    } else {
+      throw Exception(data['msg'] ?? 'Failed to remove cart item');
+    }
+  }
+
+  static Future<List<Product>> getPopularItems() async {
+    final response = await http.get(Uri.parse(Url.popularItemsUrl));
+
+    final data = jsonDecode(response.body);
+    print("Popular Items Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> popularItemsData = data['data']['results'];
+      return popularItemsData.map((e) => Product.fromJson(e)).toList();
+    } else {
+      throw Exception(data['msg'] ?? 'Failed to load popular items');
+    }
+  }
+
+  /// Add To Wishlist (future)
+  static Future<String> addToWishlist({required String productId}) async {
+    final box = Hive.box('authBox');
+    final token = box.get('token') as String?;
+
+    print("Token for Add To Wishlist: $token,");
+
+    final response = await http.post(
+      Uri.parse(Url.addWishItemUrl),
+      headers: {
+        "token": "$token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: jsonEncode({"product": productId}),
+    );
+
+    print("Add To Wishlist STATUS: ${response.statusCode}");
+    print("Add To Wishlist BODY: ${response.body}");
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return data['msg'];
+    } else {
+      throw Exception(data['msg']);
+    }
+  }
 }

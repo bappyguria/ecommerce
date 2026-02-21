@@ -13,3 +13,17 @@ class CartListError extends CartListState {
 
   CartListError(this.message);  
 }
+
+class CartItemRemoveSuccess extends CartListState {
+  final String message;
+
+  CartItemRemoveSuccess(this.message);
+}
+
+class CartItemRemoveLoading extends CartListState {}
+
+class CartItemRemoveError extends CartListState {
+  final String message;
+
+  CartItemRemoveError(this.message);
+}

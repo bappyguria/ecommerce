@@ -1,10 +1,13 @@
-
 import 'package:ecommerceapp/features/screens/add_cart/add_cart_bloc.dart';
 import 'package:ecommerceapp/features/screens/cart_list/bloc/cart_list_bloc.dart';
+import 'package:ecommerceapp/features/screens/home/popular/bloc/popular_item_bloc.dart';
+import 'package:ecommerceapp/features/screens/home/popular/bloc/popular_item_event.dart';
+import 'package:ecommerceapp/features/screens/home/popular/popular_item_list.dart';
 import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_detals_bloc.dart';
 import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_detals_event.dart';
 import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_detals_state.dart';
 import 'package:ecommerceapp/features/screens/home/product_ditals/prouct_ditals_screen.dart';
+import 'package:ecommerceapp/features/screens/wish_list/bloc/wish_list_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -50,9 +53,15 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<ProductListBloc>(create: (context) => ProductListBloc()),
         BlocProvider<AddCartBloc>(create: (context) => AddCartBloc()),
-        BlocProvider<ProductDetalsBloc>(create: (context) => ProductDetalsBloc()),
-              BlocProvider<CartListBloc>(create: (context) => CartListBloc()),
-
+        BlocProvider<ProductDetalsBloc>(
+          create: (context) => ProductDetalsBloc(),
+        ),
+        BlocProvider<CartListBloc>(create: (context) => CartListBloc()),
+        BlocProvider(
+          create: (_) => PopularItemBloc()..add(GetPopularItem()),
+          child: HomeScreen(),
+        ),
+        BlocProvider<WishListBloc>(create: (context) => WishListBloc()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

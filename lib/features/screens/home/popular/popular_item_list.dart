@@ -1,52 +1,48 @@
-
-import 'package:ecommerceapp/features/data/models/product_model.dart';
+import 'package:ecommerceapp/features/screens/home/popular/bloc/popular_item_bloc.dart';
+import 'package:ecommerceapp/features/screens/home/popular/bloc/popular_item_event.dart';
+import 'package:ecommerceapp/features/screens/home/popular/bloc/popular_item_state.dart';
 import 'package:ecommerceapp/features/screens/widget/product_cart_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../product_ditals/prouct_ditals_screen.dart';
-import 'bloc/product_list_bloc.dart';
-import 'bloc/product_list_event.dart';
-import 'bloc/product_list_state.dart';
 
-class ProductListScreen extends StatefulWidget {
-  final String categoryId;
-  final String categoryName;
 
-  const ProductListScreen({
+class PopularItemList extends StatefulWidget {
+
+  const PopularItemList({
     super.key,
-    required this.categoryId,
-    required this.categoryName,
+    
   });
 
   @override
-  State<ProductListScreen> createState() => _ProductListScreenState();
+  State<PopularItemList> createState() => _PopularItemListState();
 }
 
-class _ProductListScreenState extends State<ProductListScreen> {
+class _PopularItemListState extends State<PopularItemList> {
   @override
   void initState() {
     super.initState();
-    context.read<ProductListBloc>().add(
-      FetchProductsListByCategoryId(widget.categoryId),
+    context.read<PopularItemBloc>().add(
+      GetPopularItem(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.categoryName)),
-      body: BlocBuilder<ProductListBloc, ProductListState>(
+      appBar: AppBar(title: Text("Popular Items")),
+      body: BlocBuilder<PopularItemBloc, PopularItemState>(
         builder: (context, state) {
-          if (state is ProductListLodding) {
+          if (state is PopularItemLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is LodedProductList) {
+          if (state is PopularItemLoaded) {
             return Padding(
               padding: const EdgeInsets.all(12),
               child: GridView.builder(
-                itemCount: state.productList.length,
+                itemCount: state.popularItems.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 12,
@@ -54,7 +50,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   childAspectRatio: 0.60, // 👈 overflow fix
                 ),
                 itemBuilder: (context, index) {
-                  final product = state.productList[index];
+                  final product = state.popularItems[index];
 
                   return InkWell(
                     onTap: () {
@@ -71,8 +67,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
             );
           }
 
-          if (state is ProductListError) {
-            return Center(child: Text(state.message));
+          if (state is PopularItemError) {
+            return Center(child: Text(state.toString()));
           }
 
           return const SizedBox();

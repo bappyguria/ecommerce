@@ -9,8 +9,15 @@ class Url {
       '$_baseUrl/categories?count=$count&page=$page';
   static String productsListByCategoryId(String categoryId) =>
       '$_baseUrl/products?category=$categoryId';
-        static String productsDetailsByProductId(String productId) =>
+  static String productsDetailsByProductId(String productId) =>
       '$_baseUrl/products/id/$productId';
-static String addToCartUrl =  '$_baseUrl/cart';
-static String cartListUrl =  '$_baseUrl/cart';
+  static String addToCartUrl = '$_baseUrl/cart';
+  static String cartListUrl = '$_baseUrl/cart';
+  static String cartItemRemoveUrl(String cartID) =>
+      '$_baseUrl/cart/$cartID';
+
+  static String popularItemsUrl = '$_baseUrl/products?category=67c35af85e8a445235de197b';
+  static String addWishItemUrl = '$_baseUrl/wishlist';
+
+
 }

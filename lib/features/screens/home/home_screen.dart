@@ -1,6 +1,14 @@
-
+import 'package:ecommerceapp/features/data/models/product_model.dart';
+import 'package:ecommerceapp/features/screens/home/popular/bloc/popular_item_bloc.dart';
+import 'package:ecommerceapp/features/screens/home/popular/bloc/popular_item_state.dart';
+import 'package:ecommerceapp/features/screens/home/popular/popular_item_list.dart';
+import 'package:ecommerceapp/features/screens/home/product_ditals/prouct_ditals_screen.dart';
 import 'package:ecommerceapp/features/screens/home/product_list/product_list_screen.dart';
 import 'package:ecommerceapp/features/screens/home/slider/home_slider.dart';
+import 'package:ecommerceapp/features/screens/widget/product_cart_item.dart';
+import 'package:ecommerceapp/features/screens/wish_list/bloc/wish_list_bloc.dart';
+import 'package:ecommerceapp/features/screens/wish_list/bloc/wish_list_event.dart';
+import 'package:ecommerceapp/features/screens/wish_list/bloc/wish_list_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -97,7 +105,19 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      body: SingleChildScrollView(
+      body: BlocListener<WishListBloc, WishListState>(listener: (context, state){
+        if(state is WishListError){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+
+        if(state is WishListLoaded){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Added to wishlist!')),
+          );
+        }
+      }, child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -251,7 +271,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PopularItemList(),
+                        ),
+                      );
+                    },
                     child: const Text(
                       'See All',
                       style: TextStyle(
@@ -265,15 +292,43 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               // Product Grid
-              SizedBox(
-                height: 240,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return _buildProductCard();
-                  },
-                ),
+              BlocBuilder<PopularItemBloc, PopularItemState>(
+                builder: (context, state) {
+                  if (state is PopularItemLoaded) {
+                    return SizedBox(
+                      height: 230, // important
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: state.popularItems.length,
+                        itemBuilder: (context, index) {
+                          final product = state.popularItems[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProductDetailsScreen(
+                                      productId: product.id ?? "",
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: _buildProductCard(product),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }
+
+                  if (state is PopularItemError) {
+                    return Center(child: Text(state.toString()));
+                  }
+
+                  return const SizedBox();
+                },
               ),
 
               const SizedBox(height: 80),
@@ -281,111 +336,101 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    
+    )
+    
     );
   }
 
-  Widget _buildCategoryItem(IconData icon, String label) {
-    return Column(
-      children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE0F7F4),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, size: 40, color: const Color(0xFF00BFA5)),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF00BFA5),
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _buildProductCard(Product product) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
 
-  Widget _buildProductCard() {
-    return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 140,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE0F7F4),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Stack(
-              children: [
-                Center(
-                  child: Image.asset(
-                    'assets/shoe.png',
-                    height: 100,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.shopping_bag,
-                        size: 60,
-                        color: Color(0xFF00BFA5),
-                      );
-                    },
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF00BFA5),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const IconButton(
-                      icon: Icon(Icons.favorite_border, size: 20),
-                      color: Colors.white,
-                      onPressed: null,
-                      padding: EdgeInsets.all(6),
-                      constraints: BoxConstraints(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'New Year Special Shoe 30',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Row(
+        child: SizedBox(
+          width: 140,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '\$100',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF00BFA5),
+              Container(
+                height: 140,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F7F4),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Image.network(
+                        product.photos?.first ??
+                            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHOCzaEM17rj4LhXRx3nOezr76b-3BZ_WN_A&s',
+                        // height: 100,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.shopping_bag,
+                            size: 60,
+                            color: Color(0xFF00BFA5),
+                          );
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF00BFA5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.favorite_border, size: 20),
+                          color: Colors.white,
+                          onPressed: () {
+                            context.read<WishListBloc>().add(
+                              AddToWishList(product.id ?? ""),
+                            );
+                          },
+                          padding: EdgeInsets.all(6),
+                          constraints: BoxConstraints(),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
-              const Icon(Icons.star, size: 16, color: Colors.amber),
-              const SizedBox(width: 4),
+              const SizedBox(height: 8),
               Text(
-                '4.8',
-                style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                product.title ?? 'Unknown Product',
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Text(
+                    ' ${(product.currentPrice ?? 0).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF00BFA5),
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.star, size: 16, color: Colors.amber),
+                  const SizedBox(width: 4),
+                  Text(
+                    '4.8',
+                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
