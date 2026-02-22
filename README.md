@@ -1,10 +1,5 @@
 # 🛒 Flutter E-Commerce App
 
-<<<<<<< HEAD
-<!-- ![App Banner](assets/screenshots/app_preview.png) -->
-=======
-![App Banner](assets/screenshots/app_preview.png)
->>>>>>> d96465cb96d4d338b87e6249e9558eabbd75aff2
 
 A modern, production-ready E-commerce mobile application built with **Flutter**, using **BLoC State Management**, **REST API Integration**, and **Hive Local Storage**.
 
@@ -129,7 +124,7 @@ Supports SSL Payment Gateway integration.
 
 | E-commerce App Screen |
 |-------------|
-| ![Home](assets\images\app_prevwe.png) |
+| ![E-commerce](assets/images/app_prevwe.png) |
 
 ---
 
