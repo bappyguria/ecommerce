@@ -63,6 +63,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                   // 🔹 Email Field
                   TextFormField(
+                    keyboardType: TextInputType.name,
                     controller: firstNameController,
                     decoration: InputDecoration(hintText: 'First Name'),
                     validator: (value) => value == null || value.isEmpty
@@ -71,6 +72,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   SizedBox(height: 10),
                   TextFormField(
+                    keyboardType: TextInputType.name,
                     controller: lastNameController,
                     decoration: InputDecoration(hintText: 'Last Name'),
                     validator: (value) => value == null || value.isEmpty
@@ -79,23 +81,58 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   SizedBox(height: 10),
                   TextFormField(
+                    keyboardType: TextInputType.emailAddress,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     controller: emailTextController,
                     decoration: InputDecoration(hintText: 'Email'),
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Please enter your email'
-                        : null,
+                    validator: (value) {
+                      final email = value?.trim();
+
+                      if (email == null || email.isEmpty) {
+                        return 'Please enter your email';
+                      }
+
+                      final emailRegex = RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      );
+
+                      if (!emailRegex.hasMatch(email)) {
+                        return 'Enter a valid email address';
+                      }
+
+                      return null;
+                    },
                   ),
                   SizedBox(height: 10),
                   TextFormField(
                     controller: mobileNumberController,
-                    decoration: InputDecoration(hintText: 'Mobile Number'),
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Please enter your mobile number'
-                        : null,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      hintText: 'Mobile Number',
+                    ),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your mobile number';
+                      }
+
+                      final phone = value.trim();
+
+                      // 🔥 Bangladesh Mobile Regex
+                      final bdPhoneRegex = RegExp(r'^01[3-9]\d{8}$');
+
+                      if (!bdPhoneRegex.hasMatch(phone)) {
+                        return 'Enter a valid 11-digit mobile number';
+                      }
+
+                      return null;
+                    },
                   ),
                   SizedBox(height: 10),
                   TextFormField(
                     controller: cityController,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+
                     decoration: InputDecoration(hintText: 'City'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -107,6 +144,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   SizedBox(height: 10),
                   TextFormField(
                     controller: passwordController,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
 
                     decoration: InputDecoration(hintText: 'Password'),
                     validator: (value) {

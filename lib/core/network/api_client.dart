@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:ecommerceapp/features/data/models/cart_item_mode.dart';
+import 'package:ecommerceapp/features/data/models/profile_model.dart';
+import 'package:ecommerceapp/features/data/models/wish_item.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import '../../features/data/models/category_model.dart';
@@ -41,6 +43,77 @@ class ApiService {
       throw Exception(data['msg'] ?? 'Signup failed');
     }
   }
+
+  //// PROFILE (future)
+  static Future<ProfileModel> getProfile() async {
+  final box = Hive.box('authBox');
+  final token = box.get('token') as String?;
+
+  final response = await http.get(
+    Uri.parse(Url.profileShow),
+    headers: {
+      "token": "$token",
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+  );
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode == 200) {
+
+    final profile = ProfileModel.fromJson(data['data']);
+
+    // যদি Hive এ save করতে চাও
+    await HiveService.saveUser(data['data']);
+
+    return profile;
+
+  } else {
+    throw Exception(data['msg'] ?? 'Failed to load profile');
+  }
+}
+
+//// Update Profile (future)
+   static Future<ProfileModel>updateProfile({
+     required String firstName,
+     required String lastName,
+     required String phone,
+     required String city,
+   })async{
+    final box = Hive.box('authBox');
+    final token = box.get('token') as String?;
+    final response = await http.patch(
+      Uri.parse(Url.updatedProfile),
+      headers: {
+        "token": "$token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: jsonEncode({
+        'first_name': firstName,
+        'last_name': lastName,
+        'phone': phone,
+        'city': city,
+      }),
+    );
+
+    print("Update Profile STATUS: ${response.statusCode}");
+    print("Update Profile BODY: ${response.body}");
+
+    final data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      // আপডেট হওয়া প্রোফাইল ডেটা থেকে নতুন প্রোফাইল মডেল তৈরি করুন
+      final updatedProfile = ProfileModel.fromJson(data['data']);
+
+      // Hive এ আপডেট হওয়া প্রোফাইল ডেটা সেভ করুন
+      await HiveService.saveUser(data['data']);
+
+      return updatedProfile;
+    } else {
+      throw Exception(data['msg'] ?? 'Failed to update profile');
+    }
+   }
 
   /// 🔐 Pin Verification (future)
 
@@ -285,4 +358,64 @@ class ApiService {
       throw Exception(data['msg']);
     }
   }
+
+
+/// Wish List 
+   
+   static Future<List<WishItemModel>> getWishList() async {
+    final box = Hive.box('authBox');
+    final token = box.get('token') as String?;
+
+    final respose = await http.get(
+      Uri.parse(Url.wishListUrl),
+      headers: {
+        "token": "$token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+    );
+
+    print("Wish List STATUS: ${respose.statusCode}");
+    print("Wish List BODY: ${respose.body}");
+
+    final data = jsonDecode(respose.body);
+
+    if (respose.statusCode == 200){
+      final List<dynamic> wishItemsData = data['data']['results'];
+      return wishItemsData.map((e)=> WishItemModel.fromJson(e)).toList();
+    
+    }else {
+      throw Exception(data['msg'] ?? 'Failed to load wish list');
+    }
+   }
+
+/// Remove From Wishlist
+   static Future<String> removeFromWishlist({required String itemId}) async {
+    final box = Hive.box('authBox');
+    final token = box.get('token') as String?;
+
+    final response = await http.delete(
+      Uri.parse(Url.removeWishItemUrl(itemId)),
+      headers: {
+        "token": "$token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+    );
+
+    print("Remove From Wishlist STATUS: ${response.statusCode}");
+    print("Remove From Wishlist BODY: ${response.body}");
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return data['msg'];
+    } else {
+      throw Exception(data['msg'] ?? 'Failed to remove item from wishlist');
+    }
+   }
+
+
+
+
 }

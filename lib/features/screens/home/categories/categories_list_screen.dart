@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../product_list/product_list_screen.dart';
 import 'bloc/category_bloc.dart';
@@ -71,12 +72,7 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
 
                       return InkWell(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProductListScreen(categoryId: item.id, categoryName: item.title),
-                            ),
-                          );
+                          context.push('/product-list/${item.id}/${item.title}');
                           print('Tapped on category: ${item.title}');
                           print('ID: ${item.id}');
                         },

@@ -106,17 +106,18 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       body: BlocListener<WishListBloc, WishListState>(listener: (context, state){
+        if(state is AddToWishListSuccess){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
         if(state is WishListError){
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
         }
 
-        if(state is WishListLoaded){
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Added to wishlist!')),
-          );
-        }
+        
       }, child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

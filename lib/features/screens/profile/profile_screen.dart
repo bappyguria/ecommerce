@@ -1,212 +1,202 @@
+import 'package:ecommerceapp/features/screens/profile/bloc/profile_bloc.dart';
+import 'package:ecommerceapp/features/screens/profile/bloc/profile_event.dart';
+import 'package:ecommerceapp/features/screens/profile/bloc/profile_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/storage/hive_service.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final user = HiveService.getUser();
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
 
+class _ProfileScreenState extends State<ProfileScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final phoneController = TextEditingController();
+  final cityController = TextEditingController();
+
+  bool isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProfileBloc>().add(GetProfile());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
-        title: const Text(
-          'My Profile',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
+        title: const Text("My Profile"),
         backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          IconButton(
+            icon: Icon(isEditing ? Icons.close : Icons.edit),
+            onPressed: () {
+              setState(() {
+                isEditing = !isEditing;
+              });
+            },
+          ),
+        ],
       ),
-      body: user == null
-          ? const Center(child: Text('No user data found'))
-          : SingleChildScrollView(
+
+      body: BlocConsumer<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileError) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
+        },
+
+        builder: (context, state) {
+          if (state is ProfileLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state is ProfileUpdatingLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is ProfileLoaded || state is ProfileUpdated) {
+            final user = state is ProfileLoaded ? state.profileData : (state as ProfileUpdated).updatedProfile;
+
+            if (firstNameController.text.isEmpty) {
+              firstNameController.text = user.firstName ?? "";
+              lastNameController.text = user.lastName ?? "";
+              phoneController.text = user.phone ?? "";
+              cityController.text = user.city ?? "";
+            }
+            return SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // 🔹 PROFILE HEADER
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 24,
-                      horizontal: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        // Avatar
-                        CircleAvatar(
-                          radius: 36,
-                          backgroundColor: Colors.grey.shade200,
-                          child: const Icon(
-                            Icons.person,
-                            size: 40,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        Text(
-                          '${user['first_name']} ${user['last_name']}',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user['email'],
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // 🔹 INFO CARD
-                  _infoCard(
-                    title: 'Account Information',
-                    children: [
-                      _infoRow(Icons.phone, 'Phone', user['phone']),
-                      _infoRow(Icons.location_city, 'City', user['city']),
-                      _infoRow(
-                        Icons.verified_user,
-                        'Email Verified',
-                        user['email_verified'] == true ? 'Yes' : 'No',
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    /// PROFILE CARD
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    ],
-                  ),
+                      child: Column(
+                        children: [
+                          const CircleAvatar(
+                            radius: 36,
+                            child: Icon(Icons.person, size: 40),
+                          ),
+                          const SizedBox(height: 20),
 
-                  const SizedBox(height: 24),
+                          _buildField(
+                            controller: firstNameController,
+                            label: "First Name",
+                            enabled: isEditing,
+                          ),
 
-                  // 🔹 LOGOUT BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade50,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () async {
-                        await HiveService.clear();
-                        context.go('/login');
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.logout, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text(
-                            'Logout',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                          _buildField(
+                            controller: lastNameController,
+                            label: "Last Name",
+                            enabled: isEditing,
+                          ),
+
+                          _buildField(
+                            controller: phoneController,
+                            label: "Phone",
+                            enabled: isEditing,
+                          ),
+
+                          _buildField(
+                            controller: cityController,
+                            label: "City",
+                            enabled: isEditing,
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          if (isEditing)
+                            SizedBox(
+                              width: double.infinity,
+                              height: 45,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<ProfileBloc>().add(
+                                      UpdateProfile(
+                                        firstName: firstNameController.text.trim(),
+                                        lastName: lastNameController.text.trim(),
+                                        phone: phoneController.text.trim(),
+                                        city: cityController.text.trim(),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text("Save Changes",style: TextStyle(color: Colors.white)  ,),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 24),
+
+                    /// LOGOUT
+                    SizedBox(
+                      width: double.infinity,
+                      height: 45,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade50,
+                        ),
+                        onPressed: () {
+                          context.go('/login');
+                        },
+                        child: const Text(
+                          "Logout",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            );
+          }
+
+          return const SizedBox();
+        },
+      ),
     );
   }
 
-  // 🔹 CARD CONTAINER
-  Widget _infoCard({
-    required String title,
-    required List<Widget> children,
+  Widget _buildField({
+    required TextEditingController controller,
+    required String label,
+    required bool enabled,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  // 🔹 INFO ROW
-  Widget _infoRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: const Color(0xFFF2F2F2),
-            child: Icon(
-              icon,
-              size: 18,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        controller: controller,
+        enabled: enabled,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return "Please enter $label";
+          }
+          return null;
+        },
       ),
     );
   }

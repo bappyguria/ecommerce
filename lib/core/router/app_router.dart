@@ -1,4 +1,5 @@
-
+import 'package:ecommerceapp/features/screens/home/product_ditals/prouct_ditals_screen.dart';
+import 'package:ecommerceapp/features/screens/home/product_list/product_list_screen.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/screens/auth/login/login_screen.dart';
@@ -29,22 +30,37 @@ class AppRouter {
       GoRoute(
         path: '/bottom_nav_bar',
         builder: (context, state) {
-          
           return BottomNavigationBarScreen();
         },
       ),
       GoRoute(
         path: '/profile',
         builder: (context, state) {
-          
           return ProfileScreen();
         },
       ),
+
       GoRoute(
-        path: '/categories',
+        path: '/product-list/:id/:name',
         builder: (context, state) {
+          final categoryId = state.pathParameters['id']!;
+          final categoryName = state.pathParameters['name']!;
+
+          return ProductListScreen(
+            categoryId: categoryId,
+            categoryName: categoryName,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/product-details/:id',
+        builder: (context, state) {
+          final productId = state.pathParameters['id']!;
           
-          return CategoriesListScreen();
+
+          return ProductDetailsScreen(
+            productId: productId,
+          );
         },
       ),
     ],

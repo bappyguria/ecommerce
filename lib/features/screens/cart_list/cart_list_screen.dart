@@ -230,7 +230,7 @@ class _CartScreenState extends State<CartScreen> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: const Text(
-                            "Checkout",
+                            "BUY NOW",
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,

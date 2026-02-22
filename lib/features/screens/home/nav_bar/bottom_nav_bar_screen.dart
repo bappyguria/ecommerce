@@ -1,5 +1,6 @@
 
 import 'package:ecommerceapp/features/screens/cart_list/cart_list_screen.dart';
+import 'package:ecommerceapp/features/screens/wish_list/wish_list_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../categories/categories_list_screen.dart';
@@ -29,7 +30,7 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
     ),
     const CategoriesListScreen(),
     const CartScreen(),
-    const Scaffold(body: Center(child: Text('Wish List'))),
+    const WishListScreen(),
   ];
 
   @override

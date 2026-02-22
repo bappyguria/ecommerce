@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -14,8 +13,10 @@ class LoginScreen extends StatefulWidget {
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
+
 final TextEditingController _emailController = TextEditingController();
 final TextEditingController _passwordController = TextEditingController();
+
 class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
@@ -52,26 +53,58 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 40),
 
                 // 🔹 Email Field
-                TextFormField(controller: _emailController, decoration: InputDecoration(hintText: 'Email'),
-                validator: (value){
-                  if(value == null || value.isEmpty){
-                    return 'Please enter your email';
-                  }
-                  return null;
-                },
+                TextFormField(
+                  controller: _emailController,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+
+                  decoration: InputDecoration(hintText: 'Email'),
+                  validator: (value) {
+                    final email = value?.trim();
+
+                    if (email == null || email.isEmpty) {
+                      return 'Please enter your email';
+                    }
+
+                    final emailRegex = RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    );
+
+                    if (!emailRegex.hasMatch(email)) {
+                      return 'Enter a valid email address';
+                    }
+
+                    return null;
+                  },
                 ),
                 SizedBox(height: 10),
                 TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(hintText: 'Password'),
-                  validator: (value){
-                    if(value == null || value.isEmpty){
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
                       return 'Please enter your password';
                     }
                     return null;
                   },
                 ),
-
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        context.go('/forgot_password');
+                      },
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          color: Color(0xFF00BFA5),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 24),
 
                 // 🔹 Next Button
@@ -83,7 +116,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 40,
                         child: ElevatedButton(
                           onPressed: () {
-                            
                             context.go('/signup');
                           },
 
@@ -98,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(width: 20,),
+                    SizedBox(width: 20),
                     Expanded(
                       child: SizedBox(
                         width: double.infinity,
@@ -106,12 +138,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: BlocConsumer<LoginBloc, LoginState>(
                           listener: (context, state) {
                             if (state is LoginSuccess) {
-                            //  context.go('/home');
-                            final String message = state.userData['msg'] ?? 'Login Successful';
+                              //  context.go('/home');
+                              final String message =
+                                  state.userData['msg'] ?? 'Login Successful';
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(message)),
-                              );
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text(message)));
                               _emailController.clear();
                               _passwordController.clear();
                               context.go('/bottom_nav_bar');
@@ -131,7 +164,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             }
                             return ElevatedButton(
                               onPressed: () {
-                                context.read<LoginBloc>().add(OnPressLoginButton(email: _emailController.text.trim(), password: _passwordController.text.trim()));
+                                context.read<LoginBloc>().add(
+                                  OnPressLoginButton(
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text.trim(),
+                                  ),
+                                );
                               },
                               child: const Text(
                                 'Login',
@@ -143,13 +181,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
                           },
-                        )
+                        ),
                       ),
                     ),
                   ],
                 ),
                 SizedBox(height: 20),
-
               ],
             ),
           ),

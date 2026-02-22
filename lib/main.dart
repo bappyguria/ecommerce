@@ -7,6 +7,7 @@ import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_d
 import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_detals_event.dart';
 import 'package:ecommerceapp/features/screens/home/product_ditals/bloc/product_detals_state.dart';
 import 'package:ecommerceapp/features/screens/home/product_ditals/prouct_ditals_screen.dart';
+import 'package:ecommerceapp/features/screens/profile/bloc/profile_bloc.dart';
 import 'package:ecommerceapp/features/screens/wish_list/bloc/wish_list_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
           create: (context) => PinVerificationBloc(),
         ),
         BlocProvider<LoginBloc>(create: (context) => LoginBloc()),
+        BlocProvider<ProfileBloc>(create: (context) => ProfileBloc()),
         BlocProvider<SliderBloc>(
           create: (context) => SliderBloc()..add(LoadSliderEvent()),
         ),

@@ -3,6 +3,7 @@ import 'package:ecommerceapp/features/data/models/product_model.dart';
 import 'package:ecommerceapp/features/screens/widget/product_cart_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../product_ditals/prouct_ditals_screen.dart';
 import 'bloc/product_list_bloc.dart';
@@ -43,6 +44,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
           }
 
           if (state is LodedProductList) {
+
+              if (state.productList.isEmpty) {
+                return const Center(
+                  child: Text(
+                    "No products found in this category",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                );
+              }
             return Padding(
               padding: const EdgeInsets.all(12),
               child: GridView.builder(
@@ -58,9 +68,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
                   return InkWell(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (context) => ProductDetailsScreen(productId: product.id ?? ""),
-                      ));
+                      context.push('/product-details/${product.id}');
+                      print('Tapped on product: ${product.id}');
                     },
                     child: ProductCartItem(product: product),
                   
